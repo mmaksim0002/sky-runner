@@ -27,4 +27,13 @@ export class Enemy {
         this.#x = Math.random() * (gameField.width - this.#width);
         this.#y = -this.#height;
     }
+
+    get bounds() {
+        return {
+            x: this.#x,
+            y: this.#y,
+            width: this.#width,
+            height: this.#height
+        };
+    }
 }

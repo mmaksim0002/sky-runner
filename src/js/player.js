@@ -24,4 +24,13 @@ export class Player {
         ctx.fillStyle = "blue";
         ctx.fillRect(this.#x, this.#y, this.#width, this.#height);
     }
+
+    get bounds() {
+        return {
+            x: this.#x,
+            y: this.#y,
+            width: this.#width,
+            height: this.#height
+        };
+    }
 }
