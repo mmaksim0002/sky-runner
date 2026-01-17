@@ -17,10 +17,11 @@
 .header {
     display: flex;
     margin: 15px 0;
-    gap: 15px;
+    gap: 25px;
     justify-content: center;
 }
-.score {
+.score,
+.lives {
     font-size: 18px;
     font-weight: 600;
 }

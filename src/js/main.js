@@ -7,6 +7,7 @@ const gameOverModal = document.getElementById("game-over-modal");
 const scoreText = document.getElementById("game-score");
 const gameOverScore = document.getElementById("game-over-score");
 const gameBestScore = document.getElementById("game-over-best-score");
+const livesText = document.getElementById("lives");
 const ctx = canvas.getContext("2d");
 canvas.width = 320;
 canvas.height = 480;
@@ -20,6 +21,7 @@ let enemies = [];
 let shootTimer = 0;
 let spawnTimer = 0;
 let score = 0;
+let lives = 3;
 const RELOAD_SPEED = 0.3;
 const SPAWN_TIME = 2;
 const MAX_ENEMIES = 3;
@@ -54,7 +56,9 @@ function spawnEnemy() {
 
 function init() {
     score = 0;
+    lives = 3;
     scoreText.textContent = "Score: " + score;
+    livesText.textContent = "Lives: " + lives;
     const playerWidth = 50;
     const playerHeight = 40;
     const playerPadding = 15;
@@ -96,8 +100,16 @@ function update(currentTime) {
                 scoreText.textContent = "Score: " + score;
             }
         });
-        if (isColliding(player.bounds, e.bounds) && e.active) isGameOver = true;
+        if (isColliding(player.bounds, e.bounds) && e.active) { 
+            e.die();
+            lives -= 1;
+            livesText.textContent = "Lives: " + lives;
+        }
     });
+
+    if (lives <= 0) {
+        isGameOver = true;
+    }
 
     enemies = enemies.filter(e => e.active);
     playerBullets = playerBullets.filter(b => b.active);
