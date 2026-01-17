@@ -15,7 +15,10 @@ let lastTime = 0;
 let playerBullets = [];
 let enemies = [];
 let shootTimer = 0;
+let spawnTimer = 0;
 const RELOAD_SPEED = 0.3;
+const SPAWN_TIME = 3;
+const MAX_ENEMIES = 3;
 const gameField = {
     width: canvas.width,
     height: canvas.height
@@ -31,9 +34,10 @@ function gameOver() {
 }
 
 function spawnEnemy() {
+    if (enemies.length >= MAX_ENEMIES) return;
     const [enemyWidth, enemyHeight] = [20, 20];
     const [enemyX, enemyY] = [Math.random() * (canvas.width - enemyWidth), -enemyHeight];
-    const enemySpeed = 120;
+    const enemySpeed = Math.random() * (180 - 60) + 60;
     enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed));
 }
 
@@ -82,8 +86,12 @@ function update(currentTime) {
 
     enemies = enemies.filter(e => e.active);
     playerBullets = playerBullets.filter(b => b.active);
-    // пока что создаем врага заново здесь
-    if (enemies.length === 0) spawnEnemy();
+
+    if (spawnTimer > 0) spawnTimer -= dt;
+    if (spawnTimer <= 0) {
+        spawnEnemy();
+        spawnTimer = SPAWN_TIME;
+    }
 }
 
 function draw() {
