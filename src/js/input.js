@@ -3,7 +3,8 @@ export class InputHandler {
     constructor(canvas) {
         this.keys = {
             left: false,
-            right: false
+            right: false,
+            shoot: false
         };
         this.#canvas = canvas;
         window.addEventListener('keydown', (event) => { this.#toggleKey(event.code, true); });
@@ -17,6 +18,7 @@ export class InputHandler {
     #toggleKey(code, isPressed) {
         if (code === "ArrowLeft") this.keys.left = isPressed;
         if (code === "ArrowRight") this.keys.right = isPressed;
+        if (code === "Space") this.keys.shoot = isPressed;
     }
 
     #touchHandler(event) {
@@ -24,6 +26,7 @@ export class InputHandler {
         const touch = event.touches[0];
         const canvasRect = this.#canvas.getBoundingClientRect();
         const x = touch.clientX - canvasRect.left;
+        this.keys.shoot = true;
         if (x < this.#canvas.width / 2) {
             this.keys.left = true;
             this.keys.right = false;
@@ -34,6 +37,7 @@ export class InputHandler {
     }
 
     #endTouchHandler() {
+        this.keys.shoot = false;
         this.keys.left = false;
         this.keys.right = false;
     }

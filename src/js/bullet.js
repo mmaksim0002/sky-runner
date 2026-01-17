@@ -1,4 +1,4 @@
-export class Enemy {
+export class Bullet {
     #x = 0;
     #y = 0;
     #width = 0;
@@ -15,18 +15,13 @@ export class Enemy {
     }
 
     update(dt, gameField) {
-        this.#y += this.#speed * dt;
-        if (this.#y > gameField.height + this.#height) this.#reset(gameField);
+        this.#y -= this.#speed * dt;
+        if (this.#y + this.#height <= 0) this.#isActive = false;
     }
 
     draw(ctx) {
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "grey";
         ctx.fillRect(this.#x, this.#y, this.#width, this.#height);
-    }
-
-    #reset(gameField) {
-        this.#x = Math.random() * (gameField.width - this.#width);
-        this.#y = -this.#height;
     }
 
     get bounds() {
@@ -39,8 +34,6 @@ export class Enemy {
     }
 
     get active() { return this.#isActive; }
-    die() {
-        if (!this.#isActive) return;
-        this.#isActive = false;
-    }
+    deactivate() { this.#isActive = false; }
+
 }

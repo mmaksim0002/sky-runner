@@ -13,9 +13,9 @@ export class Player {
         this.#speed = speed;
     }
 
-    update(keys, gameField) {
-        if (keys.left) this.#x -= this.#speed;
-        if (keys.right) this.#x += this.#speed;
+    update(dt, keys, gameField) {
+        if (keys.left) this.#x -= this.#speed * dt;
+        if (keys.right) this.#x += this.#speed * dt;
         if (this.#x < 0) this.#x = 0;
         if (this.#x + this.#width > gameField.width) this.#x = gameField.width - this.#width;
     }
