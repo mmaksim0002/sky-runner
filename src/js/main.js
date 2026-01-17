@@ -4,6 +4,9 @@ import { Enemy } from "./enemy.js";
 import { Bullet } from "./bullet.js";
 const canvas = document.getElementById("game-canvas");
 const gameOverModal = document.getElementById("game-over-modal");
+const scoreText = document.getElementById("game-score");
+const gameOverScore = document.getElementById("game-over-score");
+const gameBestScore = document.getElementById("game-over-best-score");
 const ctx = canvas.getContext("2d");
 canvas.width = 320;
 canvas.height = 480;
@@ -16,8 +19,9 @@ let playerBullets = [];
 let enemies = [];
 let shootTimer = 0;
 let spawnTimer = 0;
+let score = 0;
 const RELOAD_SPEED = 0.3;
-const SPAWN_TIME = 3;
+const SPAWN_TIME = 2;
 const MAX_ENEMIES = 3;
 const gameField = {
     width: canvas.width,
@@ -30,7 +34,14 @@ function isColliding(a, b) {
 
 function gameOver() {
     cancelAnimationFrame(animationId);
+    let bestScore = Number(localStorage.getItem("sky-runner-best-score")) || 0;
+    if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem("sky-runner-best-score", bestScore);
+    }
     gameOverModal.classList.add("visible");
+    gameOverScore.textContent = "Score: " + score;
+    gameBestScore.textContent = "Best: " + bestScore;
 }
 
 function spawnEnemy() {
@@ -42,6 +53,8 @@ function spawnEnemy() {
 }
 
 function init() {
+    score = 0;
+    scoreText.textContent = "Score: " + score;
     const playerWidth = 50;
     const playerHeight = 40;
     const playerPadding = 15;
@@ -79,6 +92,8 @@ function update(currentTime) {
             if (isColliding(e.bounds, b.bounds) && e.active && b.active) {
                 b.deactivate();
                 e.die();
+                score += 1;
+                scoreText.textContent = "Score: " + score;
             }
         });
         if (isColliding(player.bounds, e.bounds) && e.active) isGameOver = true;

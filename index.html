@@ -8,11 +8,16 @@
     <script type="module" src="src/js/main.js"></script>
 </head>
 <body>
+    <div class="header">
+        <div id="game-score" class="score">Score: 0</div>
+    </div>
     <div id="game-field" class="game-field">
         <canvas id="game-canvas"></canvas>
         <div id="game-over-modal" class="modal">
             <div class="modal-content">
                 <h3>Game Over!</h3>
+                <div id="game-over-score" class="score">Score: 0</div>
+                <div id="game-over-best-score" class="score">Best: 0</div>
             </div>
         </div>
     </div>
