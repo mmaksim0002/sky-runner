@@ -2,6 +2,7 @@ import { Player } from "./player.js";
 import { InputHandler } from "./input.js";
 import { Enemy } from "./enemy.js";
 import { Bullet } from "./bullet.js";
+import { BonusLife, BonusRapidFire } from "./bonus.js";
 const canvas = document.getElementById("game-canvas");
 const gameOverModal = document.getElementById("game-over-modal");
 const scoreText = document.getElementById("game-score");
@@ -18,16 +19,24 @@ let isGameOver = false;
 let lastTime = 0;
 let playerBullets = [];
 let enemies = [];
-let shootTimer = 0;
+let bonuses = [];
 let spawnTimer = 0;
 let score = 0;
-let lives = 3;
-const RELOAD_SPEED = 0.3;
 const SPAWN_TIME = 2;
 const MAX_ENEMIES = 3;
+const BONUS_DROP_CHANCE = 0.3;
 const gameField = {
     width: canvas.width,
     height: canvas.height
+};
+
+const spawnBullet = (x, y, width) => {
+    const bulletSpeed = 240;
+    const bulletWidth = 5;
+    const bulletHeight = 10;
+    const bulletX = (x + width / 2) - bulletWidth / 2;
+    const bulletY = y - bulletHeight;
+    playerBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed));
 };
 
 function isColliding(a, b) {
@@ -54,11 +63,22 @@ function spawnEnemy() {
     enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed));
 }
 
+function spawnBonus(enemy) {
+    const chance = Math.random();
+    if (chance < BONUS_DROP_CHANCE) {
+        const types = [BonusLife, BonusRapidFire];
+        const RandomBounus = types[Math.floor(Math.random() * types.length)];
+        const enemyBounds = enemy.bounds;
+        const speed = 120;
+        const [width, height] = [25, 25];
+        const [x, y] = [enemyBounds.x, enemyBounds.y];
+        bonuses.push(new RandomBounus(x, y, width, height, speed));
+    }
+}
+
 function init() {
     score = 0;
-    lives = 3;
     scoreText.textContent = "Score: " + score;
-    livesText.textContent = "Lives: " + lives;
     const playerWidth = 50;
     const playerHeight = 40;
     const playerPadding = 15;
@@ -66,6 +86,7 @@ function init() {
     const playerY = canvas.height - playerHeight - playerPadding;
     const playerSpeed = 180;
     player = new Player(playerX, playerY, playerWidth, playerHeight, playerSpeed);
+    livesText.textContent = "Lives: " + player.lives;
     input = new InputHandler(canvas);
     spawnEnemy();
     lastTime = performance.now();
@@ -76,21 +97,11 @@ function update(currentTime) {
     const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
-    player.update(dt, input.keys, gameField);
+    player.update(dt, input.keys, gameField, spawnBullet);
     enemies.forEach(e => e.update(dt, gameField));
     playerBullets.forEach(b => b.update(dt, gameField));
+    bonuses.forEach(b => b.update(dt, gameField));
 
-    if (shootTimer > 0) shootTimer -= dt;
-    if (input.keys.shoot && shootTimer <= 0) {
-        const playerBounds = player.bounds;
-        const bulletSpeed = 240;
-        const bulletWidth = 5;
-        const bulletHeight = 10;
-        const bulletX = (playerBounds.x + playerBounds.width / 2) - bulletWidth / 2;
-        const bulletY = playerBounds.y - bulletHeight;
-        playerBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight, bulletSpeed));
-        shootTimer = RELOAD_SPEED;
-    }
     enemies.forEach((e) => {
         playerBullets.forEach((b) => {
             if (isColliding(e.bounds, b.bounds) && e.active && b.active) {
@@ -98,27 +109,28 @@ function update(currentTime) {
                 e.die();
                 score += 1;
                 scoreText.textContent = "Score: " + score;
+                spawnBonus(e);
             }
         });
         if (isColliding(player.bounds, e.bounds) && e.active) { 
             e.die();
-            lives -= 1;
-            livesText.textContent = "Lives: " + lives;
+            player.takeDamage();
         }
     });
-
-    if (lives <= 0) {
-        isGameOver = true;
-    }
-
+    if (!player.active) isGameOver = true;
+    bonuses.forEach((b) => {
+        if (isColliding(player.bounds, b.bounds) && b.active) b.apply(player);
+    });
+    livesText.textContent = "Lives: " + player.lives;
     enemies = enemies.filter(e => e.active);
     playerBullets = playerBullets.filter(b => b.active);
-
+    bonuses = bonuses.filter(b => b.active);
     if (spawnTimer > 0) spawnTimer -= dt;
     if (spawnTimer <= 0) {
         spawnEnemy();
         spawnTimer = SPAWN_TIME;
     }
+    
 }
 
 function draw() {
@@ -126,6 +138,7 @@ function draw() {
     player.draw(ctx);
     enemies.forEach(e => e.draw(ctx));
     playerBullets.forEach(b => b.draw(ctx));
+    bonuses.forEach(b => b.draw(ctx));
 }
 
 function gameLoop(currentTime) {
