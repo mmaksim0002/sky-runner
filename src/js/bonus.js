@@ -56,11 +56,26 @@ export class BonusRapidFire extends Bonus {
 
     apply(player) {
         super.apply();
-        player.applyFireBoost(this.#boostValue, this.#duration);
+        player.applyFireSpeed(this.#boostValue, this.#duration);
     }
 
     draw(ctx) {
         ctx.fillStyle = "yellow";
+        super.draw(ctx);
+    }
+}
+
+export class BonusSlowFire extends Bonus {
+    #slowValue = 1;
+    #duration = 3;
+
+    apply(player) {
+        super.apply();
+        player.applyFireSpeed(this.#slowValue, this.#duration);
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = "grey";
         super.draw(ctx);
     }
 }

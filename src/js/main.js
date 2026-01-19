@@ -2,7 +2,7 @@ import { Player } from "./player.js";
 import { InputHandler } from "./input.js";
 import { Enemy } from "./enemy.js";
 import { Bullet } from "./bullet.js";
-import { BonusLife, BonusRapidFire } from "./bonus.js";
+import { BonusLife, BonusRapidFire, BonusSlowFire } from "./bonus.js";
 const canvas = document.getElementById("game-canvas");
 const gameOverModal = document.getElementById("game-over-modal");
 const scoreText = document.getElementById("game-score");
@@ -66,7 +66,7 @@ function spawnEnemy() {
 function spawnBonus(enemy) {
     const chance = Math.random();
     if (chance < BONUS_DROP_CHANCE) {
-        const types = [BonusLife, BonusRapidFire];
+        const types = [BonusLife, BonusRapidFire, BonusSlowFire];
         const RandomBounus = types[Math.floor(Math.random() * types.length)];
         const enemyBounds = enemy.bounds;
         const speed = 120;

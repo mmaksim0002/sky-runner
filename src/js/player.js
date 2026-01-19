@@ -76,7 +76,7 @@ export class Player {
         if (this.#lives > 3) this.#lives = 3;
     }
 
-    applyFireBoost(value, duration) {
+    applyFireSpeed(value, duration) {
         if (!value || !duration) return;
         this.#boostTimer = duration;
         this.#reloadSpeed = value;
