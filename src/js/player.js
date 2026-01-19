@@ -1,5 +1,6 @@
 export class Player {
     static #DEFAULT_RELOAD_SPEED = 0.3;
+    static #INVULNERABILITY_TIME = 1.5;
     #x = 0;
     #y = 0;
     #width = 0;
@@ -8,8 +9,10 @@ export class Player {
     #lives = 3;
     #shootTimer = 0;
     #boostTimer = 0;
+    #invulnerabilityTimer = 0;
     #reloadSpeed = Player.#DEFAULT_RELOAD_SPEED;
     #isActive = true;
+    #isInvulnerability = false;
 
     constructor(x, y, width, height, speed) {
         this.#x = x;
@@ -24,6 +27,10 @@ export class Player {
         if (keys.right) this.#x += this.#speed * dt;
         if (this.#x < 0) this.#x = 0;
         if (this.#x + this.#width > gameField.width) this.#x = gameField.width - this.#width;
+        if (this.#invulnerabilityTimer > 0) {
+            this.#invulnerabilityTimer -= dt;
+            if (this.#invulnerabilityTimer <= 0) this.#isInvulnerability = false;
+        }
         if (this.#boostTimer > 0) { 
             this.#boostTimer -= dt;
             if (this.#boostTimer <= 0) this.#reloadSpeed = Player.#DEFAULT_RELOAD_SPEED;
@@ -53,11 +60,14 @@ export class Player {
     get active() { return this.#isActive; }
 
     takeDamage() {
-        if (!this.#isActive) return;
+        if (!this.#isActive || this.#isInvulnerability) return;
         this.#lives -= 1;
         if (this.#lives <= 0) {
             this.#lives = 0;
             this.#isActive = false;
+        } else {
+            this.#isInvulnerability = true;
+            this.#invulnerabilityTimer = Player.#INVULNERABILITY_TIME;
         }
     }
 
