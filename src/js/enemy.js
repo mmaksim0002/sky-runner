@@ -4,29 +4,28 @@ export class Enemy {
     #width = 0;
     #height = 0;
     #speed = 0;
+    #hp = 0;
+    #scoreValue = 0;
     #isActive = true;
 
-    constructor(x, y, width, height, speed) {
+    constructor(x, y, width, height, speed, hp, scoreValue) {
         this.#x = x;
         this.#y = y;
         this.#width = width;
         this.#height = height;
         this.#speed = speed;
+        this.#hp = hp;
+        this.#scoreValue = scoreValue;
     }
 
     update(dt, gameField) {
         this.#y += this.#speed * dt;
-        if (this.#y > gameField.height + this.#height) this.#reset(gameField);
+        if (this.#y > gameField.height + this.#height) this.die();
     }
 
     draw(ctx) {
         ctx.fillStyle = "red";
         ctx.fillRect(this.#x, this.#y, this.#width, this.#height);
-    }
-
-    #reset(gameField) {
-        this.#x = Math.random() * (gameField.width - this.#width);
-        this.#y = -this.#height;
     }
 
     get bounds() {
@@ -43,4 +42,17 @@ export class Enemy {
         if (!this.#isActive) return;
         this.#isActive = false;
     }
+
+    takeDamage() {
+        if (!this.#isActive) return false;
+        this.#hp -= 1;
+        if (this.#hp <= 0) {
+            this.#hp = 0;
+            this.die();
+            return true;
+        }
+        return false;
+    }
+
+    get scoreValue() { return this.#scoreValue; }
 }

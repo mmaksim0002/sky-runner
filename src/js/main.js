@@ -55,12 +55,21 @@ function gameOver() {
     gameBestScore.textContent = "Best: " + bestScore;
 }
 
-function spawnEnemy() {
-    if (enemies.length >= MAX_ENEMIES) return;
-    const [enemyWidth, enemyHeight] = [20, 20];
+function addEnemy(width, height, hp, scoreValue) {
+    const [enemyWidth, enemyHeight] = [width, height];
     const [enemyX, enemyY] = [Math.random() * (canvas.width - enemyWidth), -enemyHeight];
     const enemySpeed = Math.random() * (180 - 60) + 60;
-    enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed));
+    enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed, hp, scoreValue));
+}
+
+function spawnEnemy() {
+    if (enemies.length >= MAX_ENEMIES) return;
+    const chance = Math.random();
+    if (chance < 0.25) {
+        addEnemy(30, 30, 2, 5);
+    } else {
+        addEnemy(20, 20, 1, 1);
+    }
 }
 
 function spawnBonus(enemy) {
@@ -106,10 +115,11 @@ function update(currentTime) {
         playerBullets.forEach((b) => {
             if (isColliding(e.bounds, b.bounds) && e.active && b.active) {
                 b.deactivate();
-                e.die();
-                score += 1;
-                scoreText.textContent = "Score: " + score;
-                spawnBonus(e);
+                if (e.takeDamage()) {
+                    score += e.scoreValue;
+                    scoreText.textContent = "Score: " + score;
+                    spawnBonus(e);
+                }
             }
         });
         if (isColliding(player.bounds, e.bounds) && e.active) { 
