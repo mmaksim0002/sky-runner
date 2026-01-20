@@ -9,8 +9,9 @@ export class Enemy {
     #shootTimer = 0;
     #reloadSpeed = 0;
     #isActive = true;
+    #image = null;
 
-    constructor(x, y, width, height, speed, hp, scoreValue, reloadSpeed = 0) {
+    constructor(x, y, width, height, speed, hp, scoreValue, image, reloadSpeed = 0) {
         this.#x = x;
         this.#y = y;
         this.#width = width;
@@ -20,6 +21,7 @@ export class Enemy {
         this.#scoreValue = scoreValue;
         this.#reloadSpeed = reloadSpeed;
         this.#shootTimer = Math.random() * this.#reloadSpeed;
+        this.#image = image;
     }
 
     update(dt, gameField, spawnBullet = () => {}) {
@@ -35,8 +37,16 @@ export class Enemy {
     }
 
     draw(ctx) {
-        ctx.fillStyle = "red";
-        ctx.fillRect(this.#x, this.#y, this.#width, this.#height);
+        if (this.#image && this.#image.complete) {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(this.#image, this.#x, this.#y, this.#width, this.#height);
+            // хитбокс
+            // ctx.strokeStyle = "red";
+            // ctx.strokeRect(this.#x, this.#y, this.#width, this.#height);
+        } else {
+            ctx.fillStyle = "red";
+            ctx.fillRect(this.#x, this.#y, this.#width, this.#height);
+        }
     }
 
     get bounds() {

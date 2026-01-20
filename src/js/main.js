@@ -30,23 +30,52 @@ const gameField = {
     width: canvas.width,
     height: canvas.height
 };
+const assets = {
+    player: new Image(),
+    enemy: new Image(),
+    bigEnemy: new Image(),
+    shootingEnemy: new Image(),
+    bullet: new Image(),
+    bonusLife: new Image(),
+    bonusRapidFire: new Image(),
+    bonusSlowFire: new Image()
+}
+const bonusTypes = [
+    (x, y, speed) => new BonusLife(x, y, 32, 24, speed, assets.bonusLife),
+    (x, y, speed) => new BonusRapidFire(x, y, 28, 24, speed, assets.bonusRapidFire),
+    (x, y, speed) => new BonusSlowFire(x, y, 24, 28, speed, assets.bonusSlowFire)
+];
+
+function load() {
+    return new Promise((resolve) => {
+        assets.enemy.src = "src/assets/enemy.png";
+        assets.bigEnemy.src = "src/assets/big-enemy.png";
+        assets.shootingEnemy.src = "src/assets/shooting-enemy.png";
+        assets.bullet.src = "src/assets/bullet.png";
+        assets.bonusLife.src = "src/assets/bonus-life.png";
+        assets.bonusRapidFire.src = "src/assets/bonus-rapid-fire.png";
+        assets.bonusSlowFire.src = "src/assets/bonus-slow-fire.png";
+        assets.player.src = "src/assets/player.png";
+        assets.player.onload = () => resolve();
+    });
+}
 
 const spawnBullet = (x, y, width) => {
     const bulletSpeed = 240;
-    const bulletWidth = 5;
-    const bulletHeight = 10;
+    const bulletWidth = 8;
+    const bulletHeight = 12;
     const bulletX = (x + width / 2) - bulletWidth / 2;
     const bulletY = y - bulletHeight;
-    playerBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed));
+    playerBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, assets.bullet));
 };
 
 const spawnEnemyBullet = (x, y, width, height, speed) => {
     const bulletSpeed = speed + 60;
-    const bulletWidth = 5;
-    const bulletHeight = 10;
+    const bulletWidth = 8;
+    const bulletHeight = 12;
     const bulletX = (x + width / 2) - bulletWidth / 2;
     const bulletY = y + height;
-    enemiesBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, true));
+    enemiesBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, assets.bullet, true));
 }
 
 function isColliding(a, b) {
@@ -65,48 +94,47 @@ function gameOver() {
     gameBestScore.textContent = "Best: " + bestScore;
 }
 
-function addEnemy(width, height, hp, scoreValue, reloadSpeed = 0) {
+function addEnemy(width, height, hp, scoreValue, image, reloadSpeed = 0) {
     const [enemyWidth, enemyHeight] = [width, height];
     const [enemyX, enemyY] = [Math.random() * (canvas.width - enemyWidth), -enemyHeight];
     const enemySpeed = Math.random() * (180 - 60) + 60;
-    enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed, hp, scoreValue, reloadSpeed));
+    enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed, hp, scoreValue, image, reloadSpeed));
 }
 
 function spawnEnemy() {
     if (enemies.length >= MAX_ENEMIES) return;
     const chance = Math.random();
     if (chance < 0.1) {
-        addEnemy(25, 25, 1, 3, 1);
+        addEnemy(24, 17, 1, 3, assets.shootingEnemy, 1);
     } else if (chance < 0.35) {
-        addEnemy(30, 30, 2, 5);
+        addEnemy(30, 19, 2, 5, assets.bigEnemy);
     } else {
-        addEnemy(20, 20, 1, 1);
+        addEnemy(20, 17, 1, 1, assets.enemy);
     }
 }
 
 function spawnBonus(enemy) {
     const chance = Math.random();
     if (chance < BONUS_DROP_CHANCE) {
-        const types = [BonusLife, BonusRapidFire, BonusSlowFire];
-        const RandomBounus = types[Math.floor(Math.random() * types.length)];
+        const createBonus = bonusTypes[Math.floor(Math.random() * bonusTypes.length)];
         const enemyBounds = enemy.bounds;
         const speed = 120;
-        const [width, height] = [25, 25];
         const [x, y] = [enemyBounds.x, enemyBounds.y];
-        bonuses.push(new RandomBounus(x, y, width, height, speed));
+        bonuses.push(createBonus(x, y, speed));
     }
 }
 
-function init() {
+async function init() {
+    await load();
     score = 0;
     scoreText.textContent = "Score: " + score;
-    const playerWidth = 50;
-    const playerHeight = 40;
+    const playerWidth = 32 * 2;
+    const playerHeight = 24 * 2;
     const playerPadding = 15;
     const playerX = (canvas.width - playerWidth) / 2;
     const playerY = canvas.height - playerHeight - playerPadding;
-    const playerSpeed = 180;
-    player = new Player(playerX, playerY, playerWidth, playerHeight, playerSpeed);
+    const playerSpeed = 240;
+    player = new Player(playerX, playerY, playerWidth, playerHeight, playerSpeed, assets.player);
     livesText.textContent = "Lives: " + player.lives;
     input = new InputHandler(canvas);
     spawnEnemy();

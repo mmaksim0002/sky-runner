@@ -13,13 +13,15 @@ export class Player {
     #reloadSpeed = Player.#DEFAULT_RELOAD_SPEED;
     #isActive = true;
     #isInvulnerability = false;
+    #image = null;
 
-    constructor(x, y, width, height, speed) {
+    constructor(x, y, width, height, speed, image) {
         this.#x = x;
         this.#y = y;
         this.#width = width;
         this.#height = height;
         this.#speed = speed;
+        this.#image = image;
     }
 
     update(dt, keys, gameField, spawnBullet = () => {}) {
@@ -43,8 +45,16 @@ export class Player {
     }
     
     draw(ctx) {
-        ctx.fillStyle = "blue";
-        ctx.fillRect(this.#x, this.#y, this.#width, this.#height);
+        if (this.#image && this.#image.complete) {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(this.#image, this.#x, this.#y, this.#width, this.#height);
+            // хитбокс
+            // ctx.strokeStyle = "red";
+            // ctx.strokeRect(this.#x, this.#y, this.#width, this.#height);
+        } else {
+            ctx.fillStyle = "blue";
+            ctx.fillRect(this.#x, this.#y, this.#width, this.#height);
+        }
     }
 
     get bounds() {
