@@ -3,6 +3,7 @@ import { InputHandler } from "./input.js";
 import { Enemy } from "./enemy.js";
 import { Bullet } from "./bullet.js";
 import { BonusLife, BonusRapidFire, BonusSlowFire } from "./bonus.js";
+import { Background } from "./background.js";
 const canvas = document.getElementById("game-canvas");
 const gameOverModal = document.getElementById("game-over-modal");
 const scoreText = document.getElementById("game-score");
@@ -38,7 +39,8 @@ const assets = {
     bullet: new Image(),
     bonusLife: new Image(),
     bonusRapidFire: new Image(),
-    bonusSlowFire: new Image()
+    bonusSlowFire: new Image(),
+    background: new Image()
 }
 const bonusTypes = [
     (x, y, speed) => new BonusLife(x, y, 32, 24, speed, assets.bonusLife),
@@ -55,6 +57,7 @@ function load() {
         assets.bonusLife.src = "src/assets/bonus-life.png";
         assets.bonusRapidFire.src = "src/assets/bonus-rapid-fire.png";
         assets.bonusSlowFire.src = "src/assets/bonus-slow-fire.png";
+        assets.background.src = "src/assets/background.png";
         assets.player.src = "src/assets/player.png";
         assets.player.onload = () => resolve();
     });
@@ -124,8 +127,11 @@ function spawnBonus(enemy) {
     }
 }
 
+let background = null;
+
 async function init() {
     await load();
+    background = new Background(assets.background, canvas.width, canvas.height);
     score = 0;
     scoreText.textContent = "Score: " + score;
     const playerWidth = 32 * 2;
@@ -146,6 +152,7 @@ function update(currentTime) {
     const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
+    background.update(dt);
     player.update(dt, input.keys, gameField, spawnBullet);
     enemies.forEach(e => e.update(dt, gameField, spawnEnemyBullet));
     playerBullets.forEach(b => b.update(dt, gameField));
@@ -193,6 +200,7 @@ function update(currentTime) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    background.draw(ctx);
     player.draw(ctx);
     enemies.forEach(e => e.draw(ctx));
     playerBullets.forEach(b => b.draw(ctx));
