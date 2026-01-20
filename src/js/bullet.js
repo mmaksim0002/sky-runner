@@ -4,19 +4,26 @@ export class Bullet {
     #width = 0;
     #height = 0;
     #speed = 0;
+    #directionDown = false;
     #isActive = true;
 
-    constructor(x, y, width, height, speed) {
+    constructor(x, y, width, height, speed, directionDown = false) {
         this.#x = x;
         this.#y = y;
         this.#width = width;
         this.#height = height;
         this.#speed = speed;
+        this.#directionDown = directionDown;
     }
 
     update(dt, gameField) {
-        this.#y -= this.#speed * dt;
-        if (this.#y + this.#height <= 0) this.#isActive = false;
+        if (!this.#directionDown) {
+            this.#y -= this.#speed * dt;
+            if (this.#y + this.#height <= 0) this.#isActive = false;
+        } else {
+            this.#y += this.#speed * dt;
+            if (this.#y > gameField.height + this.#height) this.#isActive = false;
+        }
     }
 
     draw(ctx) {

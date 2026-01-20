@@ -6,9 +6,11 @@ export class Enemy {
     #speed = 0;
     #hp = 0;
     #scoreValue = 0;
+    #shootTimer = 0;
+    #reloadSpeed = 0;
     #isActive = true;
 
-    constructor(x, y, width, height, speed, hp, scoreValue) {
+    constructor(x, y, width, height, speed, hp, scoreValue, reloadSpeed = 0) {
         this.#x = x;
         this.#y = y;
         this.#width = width;
@@ -16,11 +18,20 @@ export class Enemy {
         this.#speed = speed;
         this.#hp = hp;
         this.#scoreValue = scoreValue;
+        this.#reloadSpeed = reloadSpeed;
+        this.#shootTimer = Math.random() * this.#reloadSpeed;
     }
 
-    update(dt, gameField) {
+    update(dt, gameField, spawnBullet = () => {}) {
         this.#y += this.#speed * dt;
         if (this.#y > gameField.height + this.#height) this.die();
+        if (this.#reloadSpeed > 0) {
+            if (this.#shootTimer > 0) this.#shootTimer -= dt;
+            if (this.#shootTimer <= 0) {
+                spawnBullet(this.#x, this.#y, this.#width, this.#height, this.#speed);
+                this.#shootTimer = this.#reloadSpeed;
+            }
+        }
     }
 
     draw(ctx) {

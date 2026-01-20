@@ -18,12 +18,13 @@ let input = null;
 let isGameOver = false;
 let lastTime = 0;
 let playerBullets = [];
+let enemiesBullets = [];
 let enemies = [];
 let bonuses = [];
 let spawnTimer = 0;
 let score = 0;
 const SPAWN_TIME = 2;
-const MAX_ENEMIES = 3;
+const MAX_ENEMIES = 4;
 const BONUS_DROP_CHANCE = 0.3;
 const gameField = {
     width: canvas.width,
@@ -38,6 +39,15 @@ const spawnBullet = (x, y, width) => {
     const bulletY = y - bulletHeight;
     playerBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed));
 };
+
+const spawnEnemyBullet = (x, y, width, height, speed) => {
+    const bulletSpeed = speed + 60;
+    const bulletWidth = 5;
+    const bulletHeight = 10;
+    const bulletX = (x + width / 2) - bulletWidth / 2;
+    const bulletY = y + height;
+    enemiesBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, true));
+}
 
 function isColliding(a, b) {
     return (a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y);
@@ -55,17 +65,19 @@ function gameOver() {
     gameBestScore.textContent = "Best: " + bestScore;
 }
 
-function addEnemy(width, height, hp, scoreValue) {
+function addEnemy(width, height, hp, scoreValue, reloadSpeed = 0) {
     const [enemyWidth, enemyHeight] = [width, height];
     const [enemyX, enemyY] = [Math.random() * (canvas.width - enemyWidth), -enemyHeight];
     const enemySpeed = Math.random() * (180 - 60) + 60;
-    enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed, hp, scoreValue));
+    enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed, hp, scoreValue, reloadSpeed));
 }
 
 function spawnEnemy() {
     if (enemies.length >= MAX_ENEMIES) return;
     const chance = Math.random();
-    if (chance < 0.25) {
+    if (chance < 0.1) {
+        addEnemy(25, 25, 1, 3, 1);
+    } else if (chance < 0.35) {
         addEnemy(30, 30, 2, 5);
     } else {
         addEnemy(20, 20, 1, 1);
@@ -107,8 +119,9 @@ function update(currentTime) {
     lastTime = currentTime;
 
     player.update(dt, input.keys, gameField, spawnBullet);
-    enemies.forEach(e => e.update(dt, gameField));
+    enemies.forEach(e => e.update(dt, gameField, spawnEnemyBullet));
     playerBullets.forEach(b => b.update(dt, gameField));
+    enemiesBullets.forEach(b => b.update(dt, gameField));
     bonuses.forEach(b => b.update(dt, gameField));
 
     enemies.forEach((e) => {
@@ -127,6 +140,12 @@ function update(currentTime) {
             player.takeDamage();
         }
     });
+    enemiesBullets.forEach((b) => {
+        if (isColliding(player.bounds, b.bounds) && b.active) {
+            b.deactivate();
+            player.takeDamage();
+        }
+    });
     if (!player.active) isGameOver = true;
     bonuses.forEach((b) => {
         if (isColliding(player.bounds, b.bounds) && b.active) b.apply(player);
@@ -134,6 +153,7 @@ function update(currentTime) {
     livesText.textContent = "Lives: " + player.lives;
     enemies = enemies.filter(e => e.active);
     playerBullets = playerBullets.filter(b => b.active);
+    enemiesBullets = enemiesBullets.filter(b => b.active);
     bonuses = bonuses.filter(b => b.active);
     if (spawnTimer > 0) spawnTimer -= dt;
     if (spawnTimer <= 0) {
@@ -148,6 +168,7 @@ function draw() {
     player.draw(ctx);
     enemies.forEach(e => e.draw(ctx));
     playerBullets.forEach(b => b.draw(ctx));
+    enemiesBullets.forEach(b => b.draw(ctx));
     bonuses.forEach(b => b.draw(ctx));
 }
 
