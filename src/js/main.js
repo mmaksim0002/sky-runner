@@ -4,6 +4,7 @@ import { Enemy } from "./enemy.js";
 import { Bullet } from "./bullet.js";
 import { BonusLife, BonusRapidFire, BonusSlowFire } from "./bonus.js";
 import { Background } from "./background.js";
+import { SoundManager } from "./sound-manager.js";
 const canvas = document.getElementById("game-canvas");
 const gameOverModal = document.getElementById("game-over-modal");
 const scoreText = document.getElementById("game-score");
@@ -56,6 +57,8 @@ const enemiesChance = {
     bigEnemy: 0.35
 };
 
+const sounds = new SoundManager();
+
 function load() {
     return new Promise((resolve) => {
         assets.enemy.src = "src/assets/enemy.png";
@@ -78,6 +81,7 @@ const spawnBullet = (x, y, width) => {
     const bulletX = (x + width / 2) - bulletWidth / 2;
     const bulletY = y - bulletHeight;
     playerBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, assets.bullet));
+    sounds.play("shoot");
 };
 
 const spawnEnemyBullet = (x, y, width, height, speed) => {
@@ -87,6 +91,7 @@ const spawnEnemyBullet = (x, y, width, height, speed) => {
     const bulletX = (x + width / 2) - bulletWidth / 2;
     const bulletY = y + height;
     enemiesBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, assets.bullet, true));
+    sounds.play("shoot", 0.05);
 }
 
 function isColliding(a, b) {
@@ -141,7 +146,14 @@ function spawnBonus(enemy) {
 let background = null;
 
 async function init() {
-    await load();
+    await Promise.all([
+        load(), sounds.loadAll({
+            shoot: "src/assets/sounds/shoot.wav",
+            explosion: "src/assets/sounds/explosion.wav",
+            pickupBonus: "src/assets/sounds/pickup-bonus.wav",
+            playerDamage: "src/assets/sounds/player-damage.wav",
+        })
+    ]);
     background = new Background(assets.background, canvas.width, canvas.height);
     score = 0;
     scoreText.textContent = "Score: " + score;
@@ -191,12 +203,14 @@ function update(currentTime) {
                     score += e.scoreValue;
                     scoreText.textContent = "Score: " + score;
                     spawnBonus(e);
+                    sounds.play("explosion");
                 }
             }
         });
         if (isColliding(player.bounds, e.bounds) && e.active) { 
             e.die();
             player.takeDamage();
+            sounds.play("playerDamage");
         }
     });
     enemiesBullets.forEach((b) => {
@@ -207,7 +221,10 @@ function update(currentTime) {
     });
     if (!player.active) isGameOver = true;
     bonuses.forEach((b) => {
-        if (isColliding(player.bounds, b.bounds) && b.active) b.apply(player);
+        if (isColliding(player.bounds, b.bounds) && b.active) { 
+            b.apply(player);
+            sounds.play("pickupBonus");
+        }
     });
     livesText.textContent = "Lives: " + player.lives;
     enemies = enemies.filter(e => e.active);
