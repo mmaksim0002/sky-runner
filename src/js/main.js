@@ -24,8 +24,12 @@ let enemies = [];
 let bonuses = [];
 let spawnTimer = 0;
 let score = 0;
-const SPAWN_TIME = 2;
-const MAX_ENEMIES = 4;
+let difficultyLevel = 0;
+const difficultyStepTime = 30;
+let difficultyTimer = 0;
+let spawnTime = 2;
+let maxEnemies = 4;
+
 const BONUS_DROP_CHANCE = 0.3;
 const gameField = {
     width: canvas.width,
@@ -47,6 +51,10 @@ const bonusTypes = [
     (x, y, speed) => new BonusRapidFire(x, y, 28, 24, speed, assets.bonusRapidFire),
     (x, y, speed) => new BonusSlowFire(x, y, 24, 28, speed, assets.bonusSlowFire)
 ];
+const enemiesChance = {
+    shootingEnemy: 0.1,
+    bigEnemy: 0.35
+};
 
 function load() {
     return new Promise((resolve) => {
@@ -105,11 +113,11 @@ function addEnemy(width, height, hp, scoreValue, image, reloadSpeed = 0) {
 }
 
 function spawnEnemy() {
-    if (enemies.length >= MAX_ENEMIES) return;
+    if (enemies.length >= maxEnemies) return;
     const chance = Math.random();
-    if (chance < 0.1) {
+    if (chance < enemiesChance.shootingEnemy) {
         addEnemy(24, 17, 1, 3, assets.shootingEnemy, 1);
-    } else if (chance < 0.35) {
+    } else if (chance < enemiesChance.shootingEnemy + enemiesChance.bigEnemy) {
         addEnemy(30, 19, 2, 5, assets.bigEnemy);
     } else {
         addEnemy(20, 17, 1, 1, assets.enemy);
@@ -152,6 +160,19 @@ function update(currentTime) {
     const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
+    difficultyTimer += dt;
+    if (difficultyTimer >= (difficultyLevel + 1) * difficultyStepTime) {
+        difficultyLevel++;
+        spawnTime -= 0.1;
+        if (spawnTime < 0.8) spawnTime = 0.8;
+        maxEnemies += 1
+        if (maxEnemies > 6) maxEnemies = 6;
+        enemiesChance.bigEnemy += 0.05;
+        enemiesChance.shootingEnemy += 0.05;
+        if (enemiesChance.bigEnemy >= 0.45) enemiesChance.bigEnemy = 0.45;
+        if (enemiesChance.shootingEnemy >= 0.3) enemiesChance.shootingEnemy = 0.3;
+    }
+
     background.update(dt);
     player.update(dt, input.keys, gameField, spawnBullet);
     enemies.forEach(e => e.update(dt, gameField, spawnEnemyBullet));
@@ -193,7 +214,7 @@ function update(currentTime) {
     if (spawnTimer > 0) spawnTimer -= dt;
     if (spawnTimer <= 0) {
         spawnEnemy();
-        spawnTimer = SPAWN_TIME;
+        spawnTimer = spawnTime;
     }
     
 }
