@@ -107,7 +107,10 @@ function gameOver() {
 
 function addEnemy(width, height, hp, scoreValue, image, reloadSpeed = 0) {
     const [enemyWidth, enemyHeight] = [width, height];
-    const [enemyX, enemyY] = [Math.random() * (canvas.width - enemyWidth), -enemyHeight];
+    const padding = enemyWidth / 2;
+    const minX = padding;
+    const maxX = canvas.width - enemyWidth - padding;
+    const [enemyX, enemyY] = [Math.random() * (maxX - minX) + minX, -enemyHeight];
     const enemySpeed = Math.random() * (180 - 60) + 60;
     enemies.push(new Enemy(enemyX, enemyY, enemyWidth, enemyHeight, enemySpeed, hp, scoreValue, image, reloadSpeed));
 }

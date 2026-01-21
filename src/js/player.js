@@ -47,10 +47,9 @@ export class Player {
     draw(ctx) {
         if (this.#image && this.#image.complete) {
             ctx.imageSmoothingEnabled = false;
+            if (this.#isInvulnerability) ctx.globalAlpha = 0.5;
             ctx.drawImage(this.#image, this.#x, this.#y, this.#width, this.#height);
-            // хитбокс
-            // ctx.strokeStyle = "red";
-            // ctx.strokeRect(this.#x, this.#y, this.#width, this.#height);
+            ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "blue";
             ctx.fillRect(this.#x, this.#y, this.#width, this.#height);

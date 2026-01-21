@@ -7,6 +7,7 @@ export class Enemy {
     #hp = 0;
     #scoreValue = 0;
     #shootTimer = 0;
+    #damageTimer = 0;
     #reloadSpeed = 0;
     #isActive = true;
     #image = null;
@@ -34,15 +35,17 @@ export class Enemy {
                 this.#shootTimer = this.#reloadSpeed;
             }
         }
+        if (this.#damageTimer > 0) this.#damageTimer -= dt;
     }
 
     draw(ctx) {
         if (this.#image && this.#image.complete) {
             ctx.imageSmoothingEnabled = false;
+            if (this.#damageTimer > 0) {
+                ctx.globalAlpha = 0.5;
+            }
             ctx.drawImage(this.#image, this.#x, this.#y, this.#width, this.#height);
-            // хитбокс
-            // ctx.strokeStyle = "red";
-            // ctx.strokeRect(this.#x, this.#y, this.#width, this.#height);
+            ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "red";
             ctx.fillRect(this.#x, this.#y, this.#width, this.#height);
@@ -71,6 +74,8 @@ export class Enemy {
             this.#hp = 0;
             this.die();
             return true;
+        } else {
+            this.#damageTimer = 0.15;
         }
         return false;
     }
