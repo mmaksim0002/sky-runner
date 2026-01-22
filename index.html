@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sky Runner</title>
     <link rel="stylesheet" href="src/css/style.css">
     <script type="module" src="src/js/main.js"></script>
 </head>
 <body>
-    <div class="header">
-        <div id="game-score" class="score">Score: 0</div>
-        <div id="lives" class="lives">Lives: 3</div>
-    </div>
     <div id="game-field" class="game-field">
+        <div class="header">
+            <div id="game-score" class="score">Score: 0</div>
+            <div id="lives" class="lives">Lives: 3</div>
+        </div>
         <canvas id="game-canvas"></canvas>
         <div id="game-over-modal" class="modal">
             <div class="modal-content">

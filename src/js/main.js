@@ -12,8 +12,8 @@ const gameOverScore = document.getElementById("game-over-score");
 const gameBestScore = document.getElementById("game-over-best-score");
 const livesText = document.getElementById("lives");
 const ctx = canvas.getContext("2d");
-canvas.width = 320;
-canvas.height = 480;
+// canvas.width = 320;
+// canvas.height = 480;
 let animationId = null;
 let player = null;
 let input = null;
@@ -258,5 +258,19 @@ function gameLoop(currentTime) {
     draw();
     animationId = requestAnimationFrame(gameLoop);
 }
+
+function resizeCanvas() {
+    const container = document.getElementById("game-field");
+    const containerRect = container.getBoundingClientRect();
+    canvas.width = containerRect.width;
+    canvas.height = containerRect.height;
+    if (gameField) {
+        gameField.width = containerRect.width;
+        gameField.height = containerRect.height;
+    }
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 init();
