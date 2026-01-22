@@ -146,14 +146,6 @@ function spawnBonus(enemy) {
 let background = null;
 
 async function init() {
-    await Promise.all([
-        load(), sounds.loadAll({
-            shoot: "src/assets/sounds/shoot.wav",
-            explosion: "src/assets/sounds/explosion.wav",
-            pickupBonus: "src/assets/sounds/pickup-bonus.wav",
-            playerDamage: "src/assets/sounds/player-damage.wav",
-        })
-    ]);
     background = new Background(assets.background, canvas.width, canvas.height);
     score = 0;
     scoreText.textContent = "Score: " + score;
@@ -270,7 +262,32 @@ function resizeCanvas() {
     }
 }
 
+async function loadResources() {
+    const loadingScreen = document.getElementById("loading-screen");
+    const loadingProgress = document.getElementById("loading-progress");
+    const loadingText = document.getElementById("loading-text");
+
+    try {
+        await Promise.all([
+            load(), sounds.loadAll({
+                shoot: "src/assets/sounds/shoot.wav",
+                explosion: "src/assets/sounds/explosion.wav",
+                pickupBonus: "src/assets/sounds/pickup-bonus.wav",
+                playerDamage: "src/assets/sounds/player-damage.wav",
+            })
+        ]);
+        loadingProgress.style.width = "100%";
+        setTimeout(() => {
+            loadingScreen.classList.remove("visible");
+        }, 300);
+    } catch (e) {
+        loadingText.textContent = "Loading error!";
+        console.log(e);
+    }
+
+}
+
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-
+loadResources();
 init();
