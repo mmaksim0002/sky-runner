@@ -319,6 +319,13 @@ async function loadResources() {
                 playerDamage: "src/assets/sounds/player-damage.wav",
             })
         ]);
+
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+        }
+
         loadingProgress.style.width = "100%";
         setTimeout(() => {
             resizeCanvas();
@@ -327,7 +334,7 @@ async function loadResources() {
         }, 300);
     } catch (e) {
         loadingText.textContent = "Loading error!";
-        console.log(e);
+        console.error(e);
     }
 
 }
