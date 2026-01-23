@@ -90,4 +90,8 @@ export class Player {
         this.#boostTimer = duration;
         this.#reloadSpeed = value;
     }
+
+    resizeY(y) {
+        this.#y = y;
+    }
 }

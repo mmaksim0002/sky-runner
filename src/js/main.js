@@ -27,6 +27,7 @@ let spawnTime = 2;
 let maxEnemies = 4;
 let background = null;
 let gameState = null;
+const playerPadding = 15;
 const difficultyStepTime = 30;
 const BONUS_DROP_CHANCE = 0.3;
 const gameField = {
@@ -114,7 +115,6 @@ function startGame() {
     maxEnemies = 4;
     const playerWidth = 32 * 2;
     const playerHeight = 24 * 2;
-    const playerPadding = 15;
     const playerX = (canvas.width - playerWidth) / 2;
     const playerY = canvas.height - playerHeight - playerPadding;
     const playerSpeed = 240;
@@ -128,6 +128,7 @@ function startGame() {
 }
 
 function resume() {
+    if (sounds.ctx.state === "suspended") sounds.ctx.resume();
     lastTime = performance.now();
     gameState = GAME_STATE.PLAYING;
     showScreen("canvas");
@@ -137,6 +138,7 @@ function pause() {
     if (gameState === GAME_STATE.PLAYING) {
         gameState = GAME_STATE.PAUSED;
         showScreen("pause-screen");
+        if (sounds.ctx.state === "running") sounds.ctx.suspend();
     }
 }
 
@@ -297,6 +299,11 @@ function resizeCanvas() {
         gameField.width = containerRect.width;
         gameField.height = containerRect.height;
     }
+    if (background) background.resize(canvas.width, canvas.height);
+    if (player) {
+        const playerY = canvas.height - player.bounds.height - playerPadding;
+        player.resizeY(playerY);
+    }
 }
 
 async function loadResources() {
@@ -347,5 +354,10 @@ function unlockAudio() {
 }
 
 gameFieldContainer.addEventListener('click', unlockAudio);
+gameFieldContainer.addEventListener('touchstart', unlockAudio);
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pause();
+});
 
 loadResources();
