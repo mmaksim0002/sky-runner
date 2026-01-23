@@ -14,18 +14,35 @@
             <div id="lives" class="lives">Lives: 3</div>
         </div>
         <canvas id="game-canvas"></canvas>
-        <div id="loading-screen" class="loading-screen visible">
+        <div id="loading-screen" class="screen loading-screen visible">
             <h2>SKY RUNNER</h2>
             <div class="loading-bar">
                 <div id="loading-progress" class="loading-progress"></div>
             </div>
             <div id="loading-text" class="loading-text">Loading...</div>
         </div>
-        <div id="game-over-modal" class="modal">
-            <div class="modal-content">
+
+        <div id="start-screen" class="screen">
+            <div class="screen-content">
+                <h2>SKY RUNNER</h2>
+                <button type="button" class="button js-start-btn" aria-label="Start button">Start</button>
+            </div>
+        </div>
+
+        <div id="pause-screen" class="screen">
+            <div class="screen-content">
+                <h3>Game on pause!!</h3>
+                <button type="button" class="button js-resume-btn" aria-label="Start button">Resume</button>
+                <button type="button" class="button js-restart-btn" aria-label="Start button">Restart</button>
+            </div>
+        </div>
+
+        <div id="game-over-screen" class="screen">
+            <div class="screen-content">
                 <h3>Game Over!</h3>
                 <div id="game-over-score" class="score">Score: 0</div>
                 <div id="game-over-best-score" class="score">Best: 0</div>
+                <button type="button" class="button js-restart-btn" aria-label="Start button">Restart</button>
             </div>
         </div>
     </div>

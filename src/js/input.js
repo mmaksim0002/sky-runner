@@ -6,6 +6,11 @@ export class InputHandler {
             right: false,
             shoot: false
         };
+        this.actions = {
+            pause: false,
+            restart: false,
+            start:false
+        };
         this.#canvas = canvas;
         window.addEventListener('keydown', (event) => { this.#toggleKey(event.code, true); });
         window.addEventListener('keyup', (event) => { this.#toggleKey(event.code, false); });
@@ -19,6 +24,10 @@ export class InputHandler {
         if (code === "ArrowLeft") this.keys.left = isPressed;
         if (code === "ArrowRight") this.keys.right = isPressed;
         if (code === "Space") this.keys.shoot = isPressed;
+        if (!isPressed) return;
+        if (code === "Escape") this.actions.pause = true;
+        if (code === "Enter") this.actions.start = true;
+        if (code === "KeyR") this.actions.restart = true;
     }
 
     #touchHandler(event) {
@@ -40,5 +49,11 @@ export class InputHandler {
         this.keys.shoot = false;
         this.keys.left = false;
         this.keys.right = false;
+    }
+
+    consume(action) {
+        const value = this.actions[action];
+        this.actions[action] = false;
+        return value;
     }
 }

@@ -6,18 +6,14 @@ import { BonusLife, BonusRapidFire, BonusSlowFire } from "./bonus.js";
 import { Background } from "./background.js";
 import { SoundManager } from "./sound-manager.js";
 const canvas = document.getElementById("game-canvas");
-const gameOverModal = document.getElementById("game-over-modal");
+const gameFieldContainer = document.getElementById("game-field");
 const scoreText = document.getElementById("game-score");
 const gameOverScore = document.getElementById("game-over-score");
 const gameBestScore = document.getElementById("game-over-best-score");
 const livesText = document.getElementById("lives");
 const ctx = canvas.getContext("2d");
-// canvas.width = 320;
-// canvas.height = 480;
-let animationId = null;
 let player = null;
 let input = null;
-let isGameOver = false;
 let lastTime = 0;
 let playerBullets = [];
 let enemiesBullets = [];
@@ -26,11 +22,12 @@ let bonuses = [];
 let spawnTimer = 0;
 let score = 0;
 let difficultyLevel = 0;
-const difficultyStepTime = 30;
 let difficultyTimer = 0;
 let spawnTime = 2;
 let maxEnemies = 4;
-
+let background = null;
+let gameState = null;
+const difficultyStepTime = 30;
 const BONUS_DROP_CHANCE = 0.3;
 const gameField = {
     width: canvas.width,
@@ -56,7 +53,12 @@ const enemiesChance = {
     shootingEnemy: 0.1,
     bigEnemy: 0.35
 };
-
+const GAME_STATE = {
+    START: "start",
+    PLAYING: "playing",
+    PAUSED: "paused",
+    GAME_OVER: "game_over"
+};
 const sounds = new SoundManager();
 
 function load() {
@@ -98,14 +100,54 @@ function isColliding(a, b) {
     return (a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y);
 }
 
+function startGame() {
+    console.log("start");
+    playerBullets = [];
+    enemiesBullets = [];
+    enemies = [];
+    bonuses = [];
+    spawnTimer = 0;
+    score = 0;
+    difficultyLevel = 0;
+    difficultyTimer = 0;
+    spawnTime = 2;
+    maxEnemies = 4;
+    const playerWidth = 32 * 2;
+    const playerHeight = 24 * 2;
+    const playerPadding = 15;
+    const playerX = (canvas.width - playerWidth) / 2;
+    const playerY = canvas.height - playerHeight - playerPadding;
+    const playerSpeed = 240;
+    player = new Player(playerX, playerY, playerWidth, playerHeight, playerSpeed, assets.player);
+    spawnEnemy();
+    scoreText.textContent = "Score: " + score;
+    livesText.textContent = "Lives: " + player.lives;
+    gameState = GAME_STATE.PLAYING;
+    showScreen("canvas");
+    lastTime = performance.now();
+}
+
+function resume() {
+    lastTime = performance.now();
+    gameState = GAME_STATE.PLAYING;
+    showScreen("canvas");
+}
+
+function pause() {
+    if (gameState === GAME_STATE.PLAYING) {
+        gameState = GAME_STATE.PAUSED;
+        showScreen("pause-screen");
+    }
+}
+
 function gameOver() {
-    cancelAnimationFrame(animationId);
+    gameState = GAME_STATE.GAME_OVER;
     let bestScore = Number(localStorage.getItem("sky-runner-best-score")) || 0;
     if (score > bestScore) {
         bestScore = score;
         localStorage.setItem("sky-runner-best-score", bestScore);
     }
-    gameOverModal.classList.add("visible");
+    showScreen("game-over-screen");
     gameOverScore.textContent = "Score: " + score;
     gameBestScore.textContent = "Best: " + bestScore;
 }
@@ -143,22 +185,10 @@ function spawnBonus(enemy) {
     }
 }
 
-let background = null;
-
 async function init() {
+    gameState = GAME_STATE.START;
     background = new Background(assets.background, canvas.width, canvas.height);
-    score = 0;
-    scoreText.textContent = "Score: " + score;
-    const playerWidth = 32 * 2;
-    const playerHeight = 24 * 2;
-    const playerPadding = 15;
-    const playerX = (canvas.width - playerWidth) / 2;
-    const playerY = canvas.height - playerHeight - playerPadding;
-    const playerSpeed = 240;
-    player = new Player(playerX, playerY, playerWidth, playerHeight, playerSpeed, assets.player);
-    livesText.textContent = "Lives: " + player.lives;
     input = new InputHandler(canvas);
-    spawnEnemy();
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
 }
@@ -211,7 +241,7 @@ function update(currentTime) {
             player.takeDamage();
         }
     });
-    if (!player.active) isGameOver = true;
+    if (!player.active) gameOver();
     bonuses.forEach((b) => {
         if (isColliding(player.bounds, b.bounds) && b.active) { 
             b.apply(player);
@@ -228,13 +258,12 @@ function update(currentTime) {
         spawnEnemy();
         spawnTimer = spawnTime;
     }
-    
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     background.draw(ctx);
-    player.draw(ctx);
+    if (player) player.draw(ctx);
     enemies.forEach(e => e.draw(ctx));
     playerBullets.forEach(b => b.draw(ctx));
     enemiesBullets.forEach(b => b.draw(ctx));
@@ -242,13 +271,21 @@ function draw() {
 }
 
 function gameLoop(currentTime) {
-    if (isGameOver) {
-        gameOver();
-        return;
+    if (gameState === GAME_STATE.START) {
+        if (input.consume("start")) startGame();
     }
-    update(currentTime);
+    if (gameState === GAME_STATE.PAUSED) {
+        if (input.consume("pause")) resume();
+    }
+    if (gameState === GAME_STATE.GAME_OVER) {
+        if (input.consume("restart")) startGame();
+    }
+    if (gameState === GAME_STATE.PLAYING) {
+        if (input.consume("pause")) pause();
+        update(currentTime);
+    }
     draw();
-    animationId = requestAnimationFrame(gameLoop);
+    requestAnimationFrame(gameLoop);
 }
 
 function resizeCanvas() {
@@ -263,7 +300,6 @@ function resizeCanvas() {
 }
 
 async function loadResources() {
-    const loadingScreen = document.getElementById("loading-screen");
     const loadingProgress = document.getElementById("loading-progress");
     const loadingText = document.getElementById("loading-text");
 
@@ -278,7 +314,9 @@ async function loadResources() {
         ]);
         loadingProgress.style.width = "100%";
         setTimeout(() => {
-            loadingScreen.classList.remove("visible");
+            resizeCanvas();
+            showScreen("start-screen");
+            init();
         }, 300);
     } catch (e) {
         loadingText.textContent = "Loading error!";
@@ -287,7 +325,27 @@ async function loadResources() {
 
 }
 
+function showScreen(screenId) {
+    document.querySelectorAll(".screen").forEach((screen) => screen.classList.remove("visible"));
+    if (screenId === "canvas") return;
+    const screen = document.getElementById(screenId);
+    if (screen) screen.classList.add("visible");
+}
+
 window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+
+gameFieldContainer.addEventListener('click', (e) => {
+    const target = e.target;
+    if (target.closest(".js-start-btn")) startGame();
+    if (target.closest(".js-restart-btn")) startGame();
+    if (target.closest(".js-resume-btn")) resume();
+});
+
+function unlockAudio() {
+    sounds.ctx.resume();
+    gameFieldContainer.removeEventListener('click', unlockAudio);
+}
+
+gameFieldContainer.addEventListener('click', unlockAudio);
+
 loadResources();
-init();
