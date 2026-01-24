@@ -24,9 +24,14 @@ export class Player {
         this.#image = image;
     }
 
-    update(dt, keys, gameField, spawnBullet = () => {}) {
-        if (keys.left) this.#x -= this.#speed * dt;
-        if (keys.right) this.#x += this.#speed * dt;
+    update(dt, input, gameField, spawnBullet = () => {}) {
+        if (input.touches?.active) {
+            const targetX = input.touches.x - this.#width / 2;
+            const dx = targetX - this.#x;
+            this.#x += dx * 0.25;
+        }
+        if (input.keys.left) this.#x -= this.#speed * dt;
+        if (input.keys.right) this.#x += this.#speed * dt;
         if (this.#x < 0) this.#x = 0;
         if (this.#x + this.#width > gameField.width) this.#x = gameField.width - this.#width;
         if (this.#invulnerabilityTimer > 0) {
@@ -38,7 +43,7 @@ export class Player {
             if (this.#boostTimer <= 0) this.#reloadSpeed = Player.#DEFAULT_RELOAD_SPEED;
         }
         if (this.#shootTimer > 0) this.#shootTimer -= dt;
-        if (keys.shoot && this.#shootTimer <= 0) {
+        if (input.keys.shoot && this.#shootTimer <= 0) {
             spawnBullet(this.#x, this.#y, this.#width);
             this.#shootTimer = this.#reloadSpeed;
         }

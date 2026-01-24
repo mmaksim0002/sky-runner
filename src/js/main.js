@@ -213,7 +213,7 @@ function update(currentTime) {
     }
 
     background.update(dt);
-    player.update(dt, input.keys, gameField, spawnBullet);
+    player.update(dt, input, gameField, spawnBullet);
     enemies.forEach(e => e.update(dt, gameField, spawnEnemyBullet));
     playerBullets.forEach(b => b.update(dt, gameField));
     enemiesBullets.forEach(b => b.update(dt, gameField));

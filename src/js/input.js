@@ -11,11 +11,15 @@ export class InputHandler {
             restart: false,
             start:false
         };
+        this.touches = {
+            active: false,
+            x: 0
+        };
         this.#canvas = canvas;
         window.addEventListener('keydown', (event) => { this.#toggleKey(event.code, true); });
         window.addEventListener('keyup', (event) => { this.#toggleKey(event.code, false); });
         canvas.addEventListener('touchstart', (event) => { this.#touchHandler(event); });
-        canvas.addEventListener('touchmove', (event) => { this.#touchHandler(event); });
+        canvas.addEventListener('touchmove', (event) => { this.#touchMove(event); });
         canvas.addEventListener('touchend', () => { this.#endTouchHandler(); });
         canvas.addEventListener('touchcancel', () => { this.#endTouchHandler(); });
     }
@@ -35,20 +39,22 @@ export class InputHandler {
         const touch = event.touches[0];
         const canvasRect = this.#canvas.getBoundingClientRect();
         const x = touch.clientX - canvasRect.left;
+        this.touches.active = true;
+        this.touches.x = x;
         this.keys.shoot = true;
-        if (x < this.#canvas.width / 2) {
-            this.keys.left = true;
-            this.keys.right = false;
-        } else {
-            this.keys.left = false;
-            this.keys.right = true;
-        }
+    }
+
+    #touchMove(event) {
+        if (!this.touches.active) return;
+        if (event.cancelable) event.preventDefault();
+        const touch = event.touches[0];
+        const canvasRect = this.#canvas.getBoundingClientRect();
+        this.touches.x = touch.clientX - canvasRect.left;
     }
 
     #endTouchHandler() {
+        this.touches.active = false;
         this.keys.shoot = false;
-        this.keys.left = false;
-        this.keys.right = false;
     }
 
     consume(action) {
