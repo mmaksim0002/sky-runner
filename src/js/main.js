@@ -27,9 +27,15 @@ let spawnTime = 2;
 let maxEnemies = 4;
 let background = null;
 let gameState = null;
-const playerPadding = 15;
+const playerPadding = 60;
 const difficultyStepTime = 30;
 const BONUS_DROP_CHANCE = 0.3;
+const SCALE = {
+    PLAYER: 2.6,
+    ENEMY: 1.4,
+    BULLET: 1.25,
+    BONUS: 1.25
+};
 const gameField = {
     width: canvas.width,
     height: canvas.height
@@ -46,9 +52,9 @@ const assets = {
     background: new Image()
 }
 const bonusTypes = [
-    (x, y, speed) => new BonusLife(x, y, 32, 24, speed, assets.bonusLife),
-    (x, y, speed) => new BonusRapidFire(x, y, 28, 24, speed, assets.bonusRapidFire),
-    (x, y, speed) => new BonusSlowFire(x, y, 24, 28, speed, assets.bonusSlowFire)
+    (x, y, speed) => new BonusLife(x, y, 32 * SCALE.BONUS, 24 * SCALE.BONUS, speed, assets.bonusLife),
+    (x, y, speed) => new BonusRapidFire(x, y, 28 * SCALE.BONUS, 24 * SCALE.BONUS, speed, assets.bonusRapidFire),
+    (x, y, speed) => new BonusSlowFire(x, y, 24 * SCALE.BONUS, 28 * SCALE.BONUS, speed, assets.bonusSlowFire)
 ];
 const enemiesChance = {
     shootingEnemy: 0.1,
@@ -79,8 +85,8 @@ function load() {
 
 const spawnBullet = (x, y, width) => {
     const bulletSpeed = 240;
-    const bulletWidth = 8;
-    const bulletHeight = 12;
+    const bulletWidth = 8 * SCALE.BULLET;
+    const bulletHeight = 12 * SCALE.BULLET;
     const bulletX = (x + width / 2) - bulletWidth / 2;
     const bulletY = y - bulletHeight;
     playerBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, assets.bullet));
@@ -89,8 +95,8 @@ const spawnBullet = (x, y, width) => {
 
 const spawnEnemyBullet = (x, y, width, height, speed) => {
     const bulletSpeed = speed + 60;
-    const bulletWidth = 8;
-    const bulletHeight = 12;
+    const bulletWidth = 8 * SCALE.BULLET;
+    const bulletHeight = 12 * SCALE.BULLET;
     const bulletX = (x + width / 2) - bulletWidth / 2;
     const bulletY = y + height;
     enemiesBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, assets.bullet, true));
@@ -113,8 +119,8 @@ function startGame() {
     difficultyTimer = 0;
     spawnTime = 2;
     maxEnemies = 4;
-    const playerWidth = 32 * 2;
-    const playerHeight = 24 * 2;
+    const playerWidth = 32 * SCALE.PLAYER;
+    const playerHeight = 24 * SCALE.PLAYER;
     const playerX = (canvas.width - playerWidth) / 2;
     const playerY = canvas.height - playerHeight - playerPadding;
     const playerSpeed = 240;
@@ -168,11 +174,11 @@ function spawnEnemy() {
     if (enemies.length >= maxEnemies) return;
     const chance = Math.random();
     if (chance < enemiesChance.shootingEnemy) {
-        addEnemy(24, 17, 1, 3, assets.shootingEnemy, 1);
+        addEnemy(24 * SCALE.ENEMY, 17 * SCALE.ENEMY, 1, 3, assets.shootingEnemy, 1);
     } else if (chance < enemiesChance.shootingEnemy + enemiesChance.bigEnemy) {
-        addEnemy(30, 19, 2, 5, assets.bigEnemy);
+        addEnemy(30 * SCALE.ENEMY, 19 * SCALE.ENEMY, 2, 5, assets.bigEnemy);
     } else {
-        addEnemy(20, 17, 1, 1, assets.enemy);
+        addEnemy(20 * SCALE.ENEMY, 17 * SCALE.ENEMY, 1, 1, assets.enemy);
     }
 }
 
