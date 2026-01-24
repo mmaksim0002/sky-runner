@@ -108,7 +108,7 @@ function isColliding(a, b) {
 }
 
 function startGame() {
-    console.log("start");
+    showHeader();
     playerBullets = [];
     enemiesBullets = [];
     enemies = [];
@@ -343,6 +343,10 @@ async function loadResources() {
         console.error(e);
     }
 
+}
+
+function showHeader() {
+    document.querySelector(".header").style.display = "flex";
 }
 
 function showScreen(screenId) {
