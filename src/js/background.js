@@ -1,31 +1,46 @@
 export class Background {
-    #tileImage = null;
-    #tileSize = 32;
-    #speed = 60;
-    #offsetY = 0;
-    #canvasWidth =0;
+    #canvasWidth = 0;
     #canvasHeight = 0;
+    #scrollSpeed = 60;
+    #backgroundY = 0;
 
-    constructor(titleImage, canvasWidth, canvasHeight) {
-        this.#tileImage = titleImage;
+    constructor(canvasWidth, canvasHeight) {
         this.#canvasWidth = canvasWidth;
         this.#canvasHeight = canvasHeight;
     }
 
     update(dt) {
-        this.#offsetY += this.#speed * dt;
-        if (this.#offsetY >= this.#tileSize) {
-            this.#offsetY -= this.#tileSize;
-        }
+        this.#backgroundY += this.#scrollSpeed * dt;
+        if (this.#backgroundY >= 30) this.#backgroundY = 0;
     }
 
     draw(ctx) {
-        ctx.imageSmoothingEnabled = false;
-        for (let y = -this.#tileSize + this.#offsetY; y < this.#canvasHeight; y += this.#tileSize) {
-            for (let x = 0; x < this.#canvasWidth; x += this.#tileSize) {
-                ctx.drawImage(this.#tileImage, x, y, this.#tileSize, this.#tileSize);
-            }
+
+        ctx.fillStyle = "#FDF5E6";
+        ctx.fillRect(0, 0, this.#canvasWidth, this.#canvasHeight);
+        ctx.strokeStyle = "#D1E5F0";
+        ctx.lineWidth = 1;
+        for (let y = this.#backgroundY; y < this.#canvasHeight; y += 30) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(this.#canvasWidth, y);
+            ctx.stroke();
         }
+
+        for (let x = 0; x < this.#canvasWidth; x += 30) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, this.#canvasHeight);
+            ctx.stroke();
+        }
+
+        ctx.strokeStyle = "#FFB3B3";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(60, 0);
+        ctx.lineTo(60, this.#canvasHeight);
+        ctx.stroke();
+
     }
 
     resize(canvasWidth, canvasHeight) {

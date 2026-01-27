@@ -30,12 +30,17 @@ let gameState = null;
 const playerPadding = 60;
 const difficultyStepTime = 30;
 const BONUS_DROP_CHANCE = 0.3;
-const SCALE = {
-    PLAYER: 2.6,
-    ENEMY: 1.4,
-    BULLET: 1.25,
-    BONUS: 1.25
-};
+const SCALE = 1;
+const BASE_SIZE = {
+    PLAYER: { width: 72, height: 86 },
+    ENEMY: { width: 47, height: 55 },
+    BIG_ENEMY: { width: 50, height: 59 },
+    SHOOTING_ENEMY: { width: 47, height: 55 },
+    BULLET: { width: 11, height: 11 },
+    BONUS_LIFE: { width: 32, height: 28 },
+    BONUS_RAPID_FIRE: { width: 16, height: 26 },
+    BONUS_SLOW_FIRE: { width: 32, height: 23 },
+}
 const gameField = {
     width: canvas.width,
     height: canvas.height
@@ -48,13 +53,12 @@ const assets = {
     bullet: new Image(),
     bonusLife: new Image(),
     bonusRapidFire: new Image(),
-    bonusSlowFire: new Image(),
-    background: new Image()
+    bonusSlowFire: new Image()
 }
 const bonusTypes = [
-    (x, y, speed) => new BonusLife(x, y, 32 * SCALE.BONUS, 24 * SCALE.BONUS, speed, assets.bonusLife),
-    (x, y, speed) => new BonusRapidFire(x, y, 28 * SCALE.BONUS, 24 * SCALE.BONUS, speed, assets.bonusRapidFire),
-    (x, y, speed) => new BonusSlowFire(x, y, 24 * SCALE.BONUS, 28 * SCALE.BONUS, speed, assets.bonusSlowFire)
+    (x, y, speed) => new BonusLife(x, y, BASE_SIZE.BONUS_LIFE.width * SCALE, BASE_SIZE.BONUS_LIFE.height * SCALE, speed, assets.bonusLife),
+    (x, y, speed) => new BonusRapidFire(x, y, BASE_SIZE.BONUS_RAPID_FIRE.width * SCALE, BASE_SIZE.BONUS_RAPID_FIRE.height * SCALE, speed, assets.bonusRapidFire),
+    (x, y, speed) => new BonusSlowFire(x, y, BASE_SIZE.BONUS_SLOW_FIRE.width * SCALE, BASE_SIZE.BONUS_SLOW_FIRE.height * SCALE, speed, assets.bonusSlowFire)
 ];
 const enemiesChance = {
     shootingEnemy: 0.1,
@@ -77,7 +81,6 @@ function load() {
         assets.bonusLife.src = "src/assets/bonus-life.png";
         assets.bonusRapidFire.src = "src/assets/bonus-rapid-fire.png";
         assets.bonusSlowFire.src = "src/assets/bonus-slow-fire.png";
-        assets.background.src = "src/assets/background.png";
         assets.player.src = "src/assets/player.png";
         assets.player.onload = () => resolve();
     });
@@ -85,8 +88,8 @@ function load() {
 
 const spawnBullet = (x, y, width) => {
     const bulletSpeed = 240;
-    const bulletWidth = 8 * SCALE.BULLET;
-    const bulletHeight = 12 * SCALE.BULLET;
+    const bulletWidth = BASE_SIZE.BULLET.width * SCALE;
+    const bulletHeight = BASE_SIZE.BULLET.height * SCALE;
     const bulletX = (x + width / 2) - bulletWidth / 2;
     const bulletY = y - bulletHeight;
     playerBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, assets.bullet));
@@ -95,8 +98,8 @@ const spawnBullet = (x, y, width) => {
 
 const spawnEnemyBullet = (x, y, width, height, speed) => {
     const bulletSpeed = speed + 60;
-    const bulletWidth = 8 * SCALE.BULLET;
-    const bulletHeight = 12 * SCALE.BULLET;
+    const bulletWidth = BASE_SIZE.BULLET.width  * SCALE;
+    const bulletHeight = BASE_SIZE.BULLET.height * SCALE;
     const bulletX = (x + width / 2) - bulletWidth / 2;
     const bulletY = y + height;
     enemiesBullets.push(new Bullet(bulletX, bulletY, bulletWidth, bulletHeight,  bulletSpeed, assets.bullet, true));
@@ -119,8 +122,8 @@ function startGame() {
     difficultyTimer = 0;
     spawnTime = 2;
     maxEnemies = 4;
-    const playerWidth = 32 * SCALE.PLAYER;
-    const playerHeight = 24 * SCALE.PLAYER;
+    const playerWidth = BASE_SIZE.PLAYER.width * SCALE;
+    const playerHeight = BASE_SIZE.PLAYER.height * SCALE;
     const playerX = (canvas.width - playerWidth) / 2;
     const playerY = canvas.height - playerHeight - playerPadding;
     const playerSpeed = 240;
@@ -174,11 +177,11 @@ function spawnEnemy() {
     if (enemies.length >= maxEnemies) return;
     const chance = Math.random();
     if (chance < enemiesChance.shootingEnemy) {
-        addEnemy(24 * SCALE.ENEMY, 17 * SCALE.ENEMY, 1, 3, assets.shootingEnemy, 1);
+        addEnemy(BASE_SIZE.SHOOTING_ENEMY.width * SCALE, BASE_SIZE.SHOOTING_ENEMY.height * SCALE, 1, 3, assets.shootingEnemy, 1);
     } else if (chance < enemiesChance.shootingEnemy + enemiesChance.bigEnemy) {
-        addEnemy(30 * SCALE.ENEMY, 19 * SCALE.ENEMY, 2, 5, assets.bigEnemy);
+        addEnemy(BASE_SIZE.BIG_ENEMY.width * SCALE, BASE_SIZE.BIG_ENEMY.height * SCALE, 2, 5, assets.bigEnemy);
     } else {
-        addEnemy(20 * SCALE.ENEMY, 17 * SCALE.ENEMY, 1, 1, assets.enemy);
+        addEnemy(BASE_SIZE.ENEMY.width * SCALE, BASE_SIZE.ENEMY.height * SCALE, 1, 1, assets.enemy);
     }
 }
 
@@ -195,7 +198,7 @@ function spawnBonus(enemy) {
 
 async function init() {
     gameState = GAME_STATE.START;
-    background = new Background(assets.background, canvas.width, canvas.height);
+    background = new Background(canvas.width, canvas.height);
     input = new InputHandler(canvas);
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
@@ -270,6 +273,8 @@ function update(currentTime) {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     background.draw(ctx);
     if (player) player.draw(ctx);
     enemies.forEach(e => e.draw(ctx));

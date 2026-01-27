@@ -40,7 +40,6 @@ export class Enemy {
 
     draw(ctx) {
         if (this.#image && this.#image.complete) {
-            ctx.imageSmoothingEnabled = false;
             if (this.#damageTimer > 0) {
                 ctx.globalAlpha = 0.5;
             }

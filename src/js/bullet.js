@@ -30,7 +30,6 @@ export class Bullet {
 
     draw(ctx) {
         if (this.#image && this.#image.complete) {
-            ctx.imageSmoothingEnabled = false;
             ctx.drawImage(this.#image, this.#x, this.#y, this.#width,this.#height);
             // хитбокс
             // ctx.strokeStyle = "red";
