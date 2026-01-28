@@ -51,7 +51,7 @@ export class Player {
     
     draw(ctx) {
         if (this.#image && this.#image.complete) {
-            if (this.#isInvulnerability) ctx.globalAlpha = 0.5;
+            if (this.#isInvulnerability) ctx.globalAlpha = Math.sin(this.#invulnerabilityTimer * 20) * 0.5 + 0.5;
             ctx.drawImage(this.#image, this.#x, this.#y, this.#width, this.#height);
             ctx.globalAlpha = 1;
         } else {
@@ -87,6 +87,7 @@ export class Player {
     addLife(liveCount) {
         this.#lives += liveCount;
         if (this.#lives > 3) this.#lives = 3;
+        this.onLifeAdded?.();
     }
 
     applyFireSpeed(value, duration) {

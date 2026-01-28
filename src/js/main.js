@@ -5,6 +5,7 @@ import { Bullet } from "./bullet.js";
 import { BonusLife, BonusRapidFire, BonusSlowFire } from "./bonus.js";
 import { Background } from "./background.js";
 import { SoundManager } from "./sound-manager.js";
+import { FloatingText } from "./floating-text.js";
 const canvas = document.getElementById("game-canvas");
 const gameFieldContainer = document.getElementById("game-field");
 const scoreText = document.getElementById("game-score");
@@ -19,6 +20,7 @@ let playerBullets = [];
 let enemiesBullets = [];
 let enemies = [];
 let bonuses = [];
+let floatingTexts = [];
 let spawnTimer = 0;
 let score = 0;
 let difficultyLevel = 0;
@@ -27,6 +29,9 @@ let spawnTime = 2;
 let maxEnemies = 4;
 let background = null;
 let gameState = null;
+let shakeTime = 0;
+let shakePower = 6;
+let hitStopTime = 0;
 const playerPadding = 60;
 const difficultyStepTime = 30;
 const BONUS_DROP_CHANCE = 0.3;
@@ -128,12 +133,30 @@ function startGame() {
     const playerY = canvas.height - playerHeight - playerPadding;
     const playerSpeed = 240;
     player = new Player(playerX, playerY, playerWidth, playerHeight, playerSpeed, assets.player);
+    player.onLifeAdded = () => { pulseLives(); };
     spawnEnemy();
-    scoreText.textContent = "Score: " + score;
-    livesText.textContent = "Lives: " + player.lives;
+    scoreText.textContent = score;
+    livesText.querySelector("span").textContent = "x" + player.lives;
     gameState = GAME_STATE.PLAYING;
     showScreen("canvas");
     lastTime = performance.now();
+}
+
+function hitStop(duration = 0.03) {
+    hitStopTime = Math.max(hitStopTime, duration);
+}
+
+function updateScore(score) {
+    scoreText.textContent = score;
+    scoreText.classList.remove("pulse");
+    void scoreText.offsetWidth;
+    scoreText.classList.add("pulse");
+}
+
+function pulseLives(type = "pulse") {
+    livesText.classList.remove("pulse", "hit");
+    void livesText.offsetWidth;
+    livesText.classList.add(type);
 }
 
 function resume() {
@@ -152,6 +175,7 @@ function pause() {
 }
 
 function gameOver() {
+    if (shakeTime > 0) shakeTime = 0;
     gameState = GAME_STATE.GAME_OVER;
     let bestScore = Number(localStorage.getItem("sky-runner-best-score")) || 0;
     if (score > bestScore) {
@@ -204,9 +228,18 @@ async function init() {
     requestAnimationFrame(gameLoop);
 }
 
+function shakeScreen(time, power) {
+    [shakeTime, shakePower] = [time, power];
+}
+
 function update(currentTime) {
     const dt = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
+
+    if (hitStopTime > 0) {
+        hitStopTime -= dt;
+        return;
+    }
 
     difficultyTimer += dt;
     if (difficultyTimer >= (difficultyLevel + 1) * difficultyStepTime) {
@@ -227,15 +260,19 @@ function update(currentTime) {
     playerBullets.forEach(b => b.update(dt, gameField));
     enemiesBullets.forEach(b => b.update(dt, gameField));
     bonuses.forEach(b => b.update(dt, gameField));
+    floatingTexts.forEach(t => t.update(dt));
 
     enemies.forEach((e) => {
         playerBullets.forEach((b) => {
             if (isColliding(e.bounds, b.bounds) && e.active && b.active) {
                 b.deactivate();
                 if (e.takeDamage()) {
+                    hitStop(0.01);
                     score += e.scoreValue;
-                    scoreText.textContent = "Score: " + score;
+                    updateScore(score);
                     spawnBonus(e);
+                    const floatingText = new FloatingText(`+${e.scoreValue}`, e.bounds.x + e.bounds.width / 2, e.bounds.y);
+                    floatingTexts.push(floatingText);
                     sounds.play("explosion");
                 }
             }
@@ -243,13 +280,20 @@ function update(currentTime) {
         if (isColliding(player.bounds, e.bounds) && e.active) { 
             e.die();
             player.takeDamage();
+            hitStop(0.05);
+            shakeScreen(0.15, 6);
+            pulseLives("hit");
             sounds.play("playerDamage");
         }
     });
     enemiesBullets.forEach((b) => {
         if (isColliding(player.bounds, b.bounds) && b.active) {
             b.deactivate();
+            pulseLives("hit");
             player.takeDamage();
+            hitStop(0.05);
+            shakeScreen(0.15, 4);
+            sounds.play("playerDamage");
         }
     });
     if (!player.active) gameOver();
@@ -259,28 +303,44 @@ function update(currentTime) {
             sounds.play("pickupBonus");
         }
     });
-    livesText.textContent = "Lives: " + player.lives;
+    livesText.querySelector("span").textContent = "x" + player.lives;
     enemies = enemies.filter(e => e.active);
     playerBullets = playerBullets.filter(b => b.active);
     enemiesBullets = enemiesBullets.filter(b => b.active);
     bonuses = bonuses.filter(b => b.active);
+    floatingTexts = floatingTexts.filter(t => t.active);
     if (spawnTimer > 0) spawnTimer -= dt;
     if (spawnTimer <= 0) {
         spawnEnemy();
         spawnTimer = spawnTime;
     }
+    if (shakeTime > 0) shakeTime -= dt;
 }
 
-function draw() {
+function drawScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     background.draw(ctx);
     if (player) player.draw(ctx);
     enemies.forEach(e => e.draw(ctx));
+    floatingTexts.forEach(t => t.draw(ctx));
     playerBullets.forEach(b => b.draw(ctx));
     enemiesBullets.forEach(b => b.draw(ctx));
     bonuses.forEach(b => b.draw(ctx));
+}
+
+function draw() {
+    if (shakeTime > 0) {
+        const dx = (Math.random() - 0.5) * shakePower;
+        const dy = (Math.random() - 0.5) * shakePower;
+        ctx.save();
+        ctx.translate(dx, dy);
+        drawScene();
+        ctx.restore();
+    } else {
+        drawScene();
+    }
 }
 
 function gameLoop(currentTime) {

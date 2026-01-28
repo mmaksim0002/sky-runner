@@ -43,8 +43,39 @@ body {
 }
 .score,
 .lives {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 600;
+}
+.lives {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.life-icon {
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+}
+.score.pulse {
+    animation: scorePulse 0.25s ease-out;
+}
+.lives.pulse {
+    animation: scorePulse 0.25s ease-out;
+}
+.lives.hit {
+    animation: lifeHit 0.3s ease-out;
+}
+@keyframes scorePulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); }
+    100% { transform: scale(1); }    
+}
+@keyframes lifeHit {
+    0% { transform:  scale(1); }
+    30% { transform:  scale(0.85); }
+    60% { transform:  scale(1.05); }
+    100% { transform:  scale(1); }
+    
 }
 .screen {
     position: absolute;
@@ -54,8 +85,8 @@ body {
     height: 100%;
     background: linear-gradient(
         180deg,
-        rgba(20, 30, 60, 0.75),
-        rgba(0, 0, 0, 0.85)
+        rgba(20, 30, 60, 0.35),
+        rgba(0, 0, 0, 0.45)
     );
     backdrop-filter: blur(2px);
     color: #fff;
