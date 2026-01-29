@@ -46,6 +46,7 @@ body {
     z-index: 10;
     display: none;
     justify-content: space-around;
+    align-items: center;
     pointer-events: none;
 }
 .score,
@@ -83,6 +84,24 @@ body {
     60% { transform:  scale(1.05); }
     100% { transform:  scale(1); }
     
+}
+.pause-btn {
+    font-family: "Press Start 2P", monospace;
+    font-size: 24px;
+    background: transparent;
+    border: none;
+    color: #000;
+    opacity: 0.6;
+    cursor: pointer;
+    pointer-events: all;
+    padding: 4px 8px;
+}
+.pause-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+.pause-btn:active {
+    transform: scale(0.95);
 }
 .screen {
     position: absolute;

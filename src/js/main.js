@@ -434,6 +434,8 @@ gameFieldContainer.addEventListener('click', (e) => {
     if (target.closest(".js-start-btn")) startGame();
     if (target.closest(".js-restart-btn")) startGame();
     if (target.closest(".js-resume-btn")) resume();
+    if (target.closest(".js-pause-btn")) pause();
+    if (target.closest(".js-menu-btn")) showScreen("start-screen");
 });
 
 function unlockAudio() {
