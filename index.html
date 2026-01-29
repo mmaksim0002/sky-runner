@@ -16,37 +16,40 @@
         <div class="header">
             <div id="game-score" class="score">0</div>
             <div id="lives" class="lives">
-                <img src="src/assets/player.png" class="life-icon">
+                <img src="src/assets/player.png" class="life-icon" alt="lives">
                 <span>x3</span>
             </div>
         </div>
         <canvas id="game-canvas"></canvas>
         <div id="loading-screen" class="screen loading-screen visible">
             <h2>SKY RUNNER</h2>
+            <img class="splash-img" alt="Player plane">
             <div class="loading-bar">
                 <div id="loading-progress" class="loading-progress"></div>
             </div>
-            <div id="loading-text" class="loading-text">Loading...</div>
+            <div id="loading-text" class="loading-text">Drawing...</div>
         </div>
         <div id="start-screen" class="screen">
             <div class="screen-content">
                 <h2>SKY RUNNER</h2>
-                <button type="button" class="button js-start-btn" aria-label="Start button">Start</button>
+                <button type="button" class="button btn-play js-start-btn" aria-label="Play">Play</button>
             </div>
         </div>
         <div id="pause-screen" class="screen">
             <div class="screen-content">
-                <h3>Game on pause!</h3>
-                <button type="button" class="button js-resume-btn" aria-label="Start button">Resume</button>
-                <button type="button" class="button js-restart-btn" aria-label="Start button">Restart</button>
+                <h3>PAUSE</h3>
+                <button type="button" class="button js-resume-btn" aria-label="Resume">Resume</button>
+                <button type="button" class="button js-restart-btn" aria-label="Restart">Restart</button>
+                <button type="button" class="button js-menu-btn" aria-label="Menu">Menu</button>
             </div>
         </div>
         <div id="game-over-screen" class="screen">
             <div class="screen-content">
-                <h3>Game Over!</h3>
+                <h3>GAME OVER!</h3>
                 <div id="game-over-score" class="score">Score: 0</div>
                 <div id="game-over-best-score" class="score">Best: 0</div>
-                <button type="button" class="button js-restart-btn" aria-label="Start button">Restart</button>
+                <button type="button" class="button js-restart-btn" aria-label="Restart">Restart</button>
+                <button type="button" class="button js-menu-btn" aria-label="Menu">Menu</button>
             </div>
         </div>
     </div>

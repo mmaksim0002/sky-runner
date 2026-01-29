@@ -6,6 +6,7 @@ import { BonusLife, BonusRapidFire, BonusSlowFire } from "./bonus.js";
 import { Background } from "./background.js";
 import { SoundManager } from "./sound-manager.js";
 import { FloatingText } from "./floating-text.js";
+import { PLAYER_PLANE_BASE64 } from "./splash-icon-base64.js";
 const canvas = document.getElementById("game-canvas");
 const gameFieldContainer = document.getElementById("game-field");
 const scoreText = document.getElementById("game-score");
@@ -222,7 +223,7 @@ function spawnBonus(enemy) {
 
 async function init() {
     gameState = GAME_STATE.START;
-    background = new Background(canvas.width, canvas.height);
+    // background = new Background(canvas.width, canvas.height);
     input = new InputHandler(canvas);
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
@@ -378,9 +379,14 @@ function resizeCanvas() {
 }
 
 async function loadResources() {
+    const splashImg = document.querySelector(".splash-img");
+    splashImg.src = PLAYER_PLANE_BASE64;
+    resizeCanvas();
+    background = new Background(canvas.width, canvas.height);
+    background.update(ctx);
+    background.draw(ctx);
     const loadingProgress = document.getElementById("loading-progress");
     const loadingText = document.getElementById("loading-text");
-
     try {
         await Promise.all([
             load(), sounds.loadAll({
@@ -402,7 +408,7 @@ async function loadResources() {
             resizeCanvas();
             showScreen("start-screen");
             init();
-        }, 300);
+        }, 500);
     } catch (e) {
         loadingText.textContent = "Loading error!";
         console.error(e);
