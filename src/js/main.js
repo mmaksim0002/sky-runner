@@ -380,7 +380,9 @@ function resizeCanvas() {
 
 async function loadResources() {
     const splashImg = document.querySelector(".splash-img");
+    const startImg = document.querySelector(".start-img");
     splashImg.src = PLAYER_PLANE_BASE64;
+    startImg.src = PLAYER_PLANE_BASE64;
     resizeCanvas();
     background = new Background(canvas.width, canvas.height);
     background.update(ctx);
@@ -408,7 +410,7 @@ async function loadResources() {
             resizeCanvas();
             showScreen("start-screen");
             init();
-        }, 500);
+        }, 300);
     } catch (e) {
         loadingText.textContent = "Loading error!";
         console.error(e);
