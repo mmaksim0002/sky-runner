@@ -2,7 +2,7 @@ import { Player } from "./player.js";
 import { InputHandler } from "./input.js";
 import { Enemy } from "./enemy.js";
 import { Bullet } from "./bullet.js";
-import { BonusLife, BonusRapidFire, BonusSlowFire } from "./bonus.js";
+import { BonusLife, BonusLossLife, BonusRapidFire, BonusSlowFire } from "./bonus.js";
 import { Background } from "./background.js";
 import { SoundManager } from "./sound-manager.js";
 import { FloatingText } from "./floating-text.js";
@@ -46,6 +46,7 @@ const BASE_SIZE = {
     BONUS_LIFE: { width: 32, height: 28 },
     BONUS_RAPID_FIRE: { width: 16, height: 26 },
     BONUS_SLOW_FIRE: { width: 32, height: 23 },
+    BONUS_LOSS_LIFE: { width: 32, height: 34},
 }
 const gameField = {
     width: canvas.width,
@@ -59,12 +60,14 @@ const assets = {
     bullet: new Image(),
     bonusLife: new Image(),
     bonusRapidFire: new Image(),
-    bonusSlowFire: new Image()
+    bonusSlowFire: new Image(),
+    bonusLossLife: new Image(),
 }
 const bonusTypes = [
     (x, y, speed) => new BonusLife(x, y, BASE_SIZE.BONUS_LIFE.width * SCALE, BASE_SIZE.BONUS_LIFE.height * SCALE, speed, assets.bonusLife),
     (x, y, speed) => new BonusRapidFire(x, y, BASE_SIZE.BONUS_RAPID_FIRE.width * SCALE, BASE_SIZE.BONUS_RAPID_FIRE.height * SCALE, speed, assets.bonusRapidFire),
-    (x, y, speed) => new BonusSlowFire(x, y, BASE_SIZE.BONUS_SLOW_FIRE.width * SCALE, BASE_SIZE.BONUS_SLOW_FIRE.height * SCALE, speed, assets.bonusSlowFire)
+    (x, y, speed) => new BonusSlowFire(x, y, BASE_SIZE.BONUS_SLOW_FIRE.width * SCALE, BASE_SIZE.BONUS_SLOW_FIRE.height * SCALE, speed, assets.bonusSlowFire),
+    (x, y, speed) => new BonusLossLife(x, y, BASE_SIZE.BONUS_LOSS_LIFE.width * SCALE, BASE_SIZE.BONUS_LOSS_LIFE.height * SCALE, speed, assets.bonusLossLife)
 ];
 const enemiesChance = {
     shootingEnemy: 0.1,
@@ -87,6 +90,7 @@ function load() {
         assets.bonusLife.src = "src/assets/bonus-life.png";
         assets.bonusRapidFire.src = "src/assets/bonus-rapid-fire.png";
         assets.bonusSlowFire.src = "src/assets/bonus-slow-fire.png";
+        assets.bonusLossLife.src = "src/assets/bonus-loss-life.png"
         assets.player.src = "src/assets/player.png";
         assets.player.onload = () => resolve();
     });
@@ -385,7 +389,7 @@ async function loadResources() {
     startImg.src = PLAYER_PLANE_BASE64;
     resizeCanvas();
     background = new Background(canvas.width, canvas.height);
-    background.update(ctx);
+    background.update(0);
     background.draw(ctx);
     const loadingProgress = document.getElementById("loading-progress");
     const loadingText = document.getElementById("loading-text");

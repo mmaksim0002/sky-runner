@@ -88,3 +88,15 @@ export class BonusSlowFire extends Bonus {
         super.draw(ctx);
     }
 }
+
+export class BonusLossLife extends Bonus {
+    apply(player) {
+        super.apply();
+        player.takeDamage();
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = "grey";
+        super.draw(ctx);
+    }
+}
